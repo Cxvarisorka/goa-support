@@ -1,7 +1,7 @@
 const express = require("express");
 
 // controllers
-const { register, verifyEmail, login, profile, changePassword } = require("../controllers/user.controller.js");
+const { register, verifyEmail, login, profile, changePassword, logout } = require("../controllers/user.controller.js");
 
 // middlewares
 const verifyToken = require("../middlewares/auth.js");
@@ -13,5 +13,6 @@ userRouter.get("/verify-email", verifyEmail);
 userRouter.post("/login", express.json(), login);
 userRouter.get("/profile", verifyToken, profile);
 userRouter.post("/change-password", verifyToken, express.json(), changePassword);
+userRouter.post("/logout", verifyToken, logout)
 
 module.exports = userRouter;

@@ -204,33 +204,17 @@ const changePassword = async (req, res) => {
 // მომხმარებლის აქაუნთიდან გამოსვლა
 const logout = async (req, res) => {
     try {
-        const {currentPassword, changedPassword} = req.body;
+        res.clearCookie("loginToken", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax" // იგივე რაც გაქვს create-ს დროს
+        });
 
-        // ვეძებთ მომხმარებელს id_ის მიხედვით, რომელიც ინახება token ში.
-        const user = await User.findById(req.user.id);
-
-        // თუ მომხმარებელი ვერ მოიძებნა, ესეიგი token_ის პრობლემაა 
-        if(!user) return res.status(400).json("Token_ის პრობლემაა, გთხოვთ სცადოთ მოგვიანებით!");
-        
-        // ვადარებთ მომხმარებლის მიერ რეგისტრირებულ პაროლს და შემოტანილ პაროლს
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-
-        // თუ მომხმარებლის შემოტანიული პაროლი არ ემთხვევა რეგისტრირებულ პაროლს, დავაბრუნოთ ერორი.
-        if(!isMatch) return res.status(401).json("პაროლი არასწორია!");
-
-        // პაროლის უსაფრთხოებითვის დავშიფროთ
-        const hashedPassword = await hashPassword(changedPassword);
-
-        // საბოლოოდ კი შევინახოთ მომხმარებლის ახალი პაროლი მონაცემთა ბაზაში
-        user.password = hashedPassword;
-
-        await user.save();
-        
-        res.json("პაროლი წარმატებით შეიცვალა!");
+        res.json("აქაუნთიდან გამოსვლა წარმატებით შესრულდა");
     } catch(err) {
         res.status(500).json(err.message);
     }
 }
 
 
-module.exports = {register, login, verifyEmail, profile, changePassword};
+module.exports = {register, login, logout, verifyEmail, profile, changePassword};
