@@ -8,8 +8,9 @@
 
 > *(Add your screenshots in a folder like `/screenshots` and update these links)*
 
-![Home Page](./screenshots/homepage.png)
-![Question Modal](./screenshots/question-modal.png)
+![Home Page](./screenshots/home.png)
+![Login Page](./screenshots/login.png)
+![Register Page](./screenshots/register.png)
 
 ---
 
