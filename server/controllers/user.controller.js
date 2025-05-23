@@ -134,6 +134,9 @@ const login = async (req, res) => {
         // });
 
         // ვქმნით cookies უსაფრთხოებისთვის (production)
+        res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+
         res.cookie("loginToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -204,6 +207,9 @@ const changePassword = async (req, res) => {
 // მომხმარებლის აქაუნთიდან გამოსვლა
 const logout = async (req, res) => {
     try {
+        res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        
         res.clearCookie("loginToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
