@@ -13,6 +13,6 @@ userRouter.get("/verify-email", verifyEmail);
 userRouter.post("/login", express.json(), login);
 userRouter.get("/profile", verifyToken, profile);
 userRouter.post("/change-password", verifyToken, express.json(), changePassword);
-userRouter.post("/logout", verifyToken, logout)
+userRouter.post("/logout", verifyToken, logout);
 
 module.exports = userRouter;
