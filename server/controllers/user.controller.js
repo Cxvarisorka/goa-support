@@ -136,8 +136,8 @@ const login = async (req, res) => {
         // ვქმნით cookies უსაფრთხოებისთვის (production)
         res.cookie("loginToken", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
@@ -206,9 +206,10 @@ const logout = async (req, res) => {
     try {
         res.clearCookie("loginToken", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax" // იგივე რაც გაქვს create-ს დროს
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax"
         });
+
 
         res.json("აქაუნთიდან გამოსვლა წარმატებით შესრულდა");
     } catch(err) {
