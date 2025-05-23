@@ -121,9 +121,20 @@ export const AuthProvider = ({children}) => {
     }
 
     // ვქმნით logout ფუნქციას, მომხმარებელს რომ შეეძლოს აქაუნთიდან გამოსვლა
-    const logout = () => {
-        setUser(null);
-    }
+    const logout = async () => {
+        try {
+            await fetch(`${API_URL}/user/logout`, {
+                method: "POST",
+                credentials: "include", // აუცილებელია cookie-ს გასაგზავნად
+            });
+
+            setUser(null); // წაშალე user მონაცემები frontend-იდან
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
+
 
     return (
         <AuthContext.Provider value={{register, login, logout, user}}>
