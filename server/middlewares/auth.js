@@ -4,7 +4,7 @@ const verifyToken = (req, res, next) => {
     const token = req.cookies.loginToken;
 
     if (!token) {
-        return res.status(401).json({ message: 'დაგვავიწყდა ავტორიზაცია!' });
+        return res.status(401).json('დაგვავიწყდა ავტორიზაცია!');
     }
 
     try {
@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
         req.user = decoded; // ვამატებთ დეშიფრირებულ ინფორმაციას (id, role...) req.user-ში
         next(); // გადადით შემდეგ middlewares ან controllers-ში
     } catch (err) {
-        return res.status(403).json({ message: 'ტოკენი არასწორია ან ვადა გაუვიდა!' });
+        return res.status(403).json('ტოკენი არასწორია ან ვადა გაუვიდა!');
     }
 };
 
