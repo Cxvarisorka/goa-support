@@ -6,7 +6,7 @@
 
 ## 📸 Screenshots
 
-> *(Add your screenshots in a folder like `/screenshots` and update these links)*
+> *(Project is in development mode, so this screenshots is small part of the website)*
 
 ![Home Page](./screenshots/home.png)
 ![Login Page](./screenshots/login.png)
