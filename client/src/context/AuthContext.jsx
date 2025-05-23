@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 // კონტექსტი (ქსელის შექმნა)
 export const AuthContext = createContext();
@@ -75,12 +76,16 @@ export const AuthProvider = ({children}) => {
             }
 
             // აქ შეიძლება მოვახდინოთ რაიმე დამატებითი ლოგიკა რეგისტრაციის წარმატების შემთხვევაში
-            console.log("რეგისტრაცია წარმატებით დასრულდა", data);
+            // console.log("რეგისტრაცია წარმატებით დასრულდა", data);
 
+            // გადაგვყავს ავტომატურად Login გვერდზე
             navigate("/login");
+
+            // გამოგვაქვს წარმატების მესიჯი
+            toast.success(data);
         } catch (err) {
-            // შეცდომის შემთხვევაში ვბეჭდავთ კონსოლში ინფორმაციას
-            console.error("რეგისტრაციის შეცდომა:", err);
+            // შეცდომის შემთხვევაში გამოგვაქვს ინფორმაცია კონტაინერში
+            toast.error(err.message);
         }
     };
 
@@ -108,15 +113,17 @@ export const AuthProvider = ({children}) => {
                 throw new Error(`ავტორიზაცია წარუმატებლად დასრულდა: ${data} ${response.status}`);
             }
 
-            console.log("ავტორიზაცია წარმატებით დასრულდა", data);
-
             // წარმატებიტ დასრულების შემტხვევაში, ვანიჭებტ დაბრუნებულ მონაცემებს user გლობალურ მდგომარეობას
             setUser(data);
 
+            // გადავიყვანოთ ავტომატურად პროფილზე
             navigate("/profile");
+
+            // წარმატებით ავტორიზაციის გამო გამოვუტანოთ დადებიტი მესიჯი მომხმარეწბელს
+            toast.success("ავტორიზაცია წარმატებით დასრულდა");
         } catch (err) {
             // შეცდომის შემთხვევაში ვბეჭდავთ კონსოლში ინფორმაციას
-            console.error("რეგისტრაციის შეცდომა:", err);
+            toast.error(err.message)
         }
     }
 
@@ -129,9 +136,11 @@ export const AuthProvider = ({children}) => {
             });
 
             setUser(null); // წაშალე user მონაცემები frontend-იდან
-            navigate("/login");
-        } catch (error) {
-            console.error("Logout error:", error);
+
+            // წარმატებით გამოსვლის შემთხვევაში გამოვიტანოთ მესიჯი
+            toast.warn("თქვენ გამოხვედით პროფილიდან!");
+        } catch (err) {
+            toast.error(err.message)
         }
     };
 
