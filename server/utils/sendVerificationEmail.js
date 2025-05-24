@@ -22,7 +22,7 @@ const sendVerificationEmail = async (user) => {
     });
 
     // შევქმენით დამადასტურებელი ლინკი, რომელზეც დაწკაპების შედეგად დადასტურდება აქაუნთი
-    const link = `${process.env.SERVER_URL}/user/verify-email?token=${token}`;
+    const link = `${process.env.SERVER_URL}/api/user/verify-email?token=${token}`;
 
     // ტრანსპორტერი არის საშუალება რომლითაც გვსურს გაგზავნა (gmail)
     const transporter = nodemailer.createTransport({
