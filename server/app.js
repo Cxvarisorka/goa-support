@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -8,6 +9,9 @@ const cookieParser = require("cookie-parser");
 const userRouter = require("./routers/user.router");
 
 const app = express();
+
+// კლიენტის ფოლდერი რომელიც უნდა მივაწოდო მომხმარებელს
+app.use(express.static(path.join(__dirname, "dist")))
 
 // Env ფაილის კონფიგურაცია
 dotenv.config();
@@ -24,6 +28,10 @@ app.use(cookieParser());
 // Router_ების გამოყენება
 app.use("/user", userRouter);
 
+// for any GET request that hasn't been matched by previous routes, run this function
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // cluster თან დაკავშირება ჩვენი სერვერის
 mongoose.connect(process.env.DB_AUTH)
