@@ -45,6 +45,7 @@ const register = async (req, res) => {
         await sendVerificationEmail(user);
 
         res.status(201).json("რეგისტრაცია წარმატებით დასრულდა.")
+        
     } catch(err) {
         res.status(500).json(err.message);
     }
