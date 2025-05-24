@@ -14,7 +14,7 @@ dotenv.config();
 
 // cross-origin მოთხოვნები (მხოლოდ 5173 პრტიდან არის მოთხოვნა დაშვებულია ამჟამად)
 app.use(cors({
-    origin: "http://localhost:5173", 
+    origin: process.env.CLIENT_URL, 
     credentials: true // allow cookies to be sent
 }));
 
