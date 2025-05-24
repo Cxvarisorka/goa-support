@@ -4,16 +4,6 @@
 
 ---
 
-## 📸 Screenshots
-
-> *Note: Project is under development. Screenshots below show early UI stages.*
-
-![Home Page](./screenshots/home.png)
-![Login Page](./screenshots/login.png)
-![Register Page](./screenshots/register.png)
-
----
-
 ## 🚀 Live Demo
 
 👉 [View Live Site](https://your-live-demo-link.vercel.app)
