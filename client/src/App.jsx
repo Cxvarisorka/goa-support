@@ -24,10 +24,11 @@ const App = () => {
       <Nav />
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<ProtectedRoute navigateTo={"/profile"} canAccses={user ? false : true}><Register /></ProtectedRoute>} />
-        <Route path="/login" element={<ProtectedRoute navigateTo={"/profile"} canAccses={user ? false : true}><Login /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Profile /></ProtectedRoute>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<ProtectedRoute navigateTo={"/profile"} canAccses={user ? false : true}><Register /></ProtectedRoute>} />
+          <Route path="/login" element={<ProtectedRoute navigateTo={"/profile"} canAccses={user ? false : true}><Login /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:userId" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Profile /></ProtectedRoute>} />
       </Routes>
       
       <ToastContainer position="bottom-right" autoClose={3000}  />
