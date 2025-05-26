@@ -26,7 +26,7 @@ export const AuthProvider = ({children}) => {
     const checkAuth = async () => {
         try {
             // ვაკეთებთ GET მოთხოვნას API-ის შესაბამის ენდპოინტზე
-            const response = await fetch(`${API_URL}/user/profile`, {
+            const response = await fetch(`${API_URL}/user/my-profile`, {
                 method: "GET", // მოთხოვნის მეთოდი - GET
                 credentials: "include", // ვაგზავნით cookie
             });
@@ -143,7 +143,6 @@ export const AuthProvider = ({children}) => {
             toast.error(err.message)
         }
     };
-
 
     return (
         <AuthContext.Provider value={{register, login, logout, user}}>
