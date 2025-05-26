@@ -8,9 +8,10 @@ const Register = React.memo(() => {
         e.preventDefault();
 
         const registrationData = {
-        email: e.target.email.value,
-        password: e.target.password.value,
-        fullname: e.target.fullname.value,
+            email: e.target.email.value,
+            password: e.target.password.value,
+            fullname: e.target.fullname.value,
+            username: e.target.username.value
         };
 
         register(registrationData);
@@ -52,6 +53,8 @@ const Register = React.memo(() => {
                     required
                     className="w-full mb-6 px-4 py-3 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
+
+                <input type="text" name="username" minLength={6} maxLength={10} placeholder="აქაუნთის სახელი" required className="w-full mb-6 px-4 py-3 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"/>
 
                 <button
                     type="submit"
