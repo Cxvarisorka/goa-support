@@ -13,11 +13,10 @@ const bcrypt = require('bcrypt');
 // მომხმარებლის რეგისტრაცია
 const register = async (req, res) => {
     try {
-        const {fullname, email, password} = req.body;
+        const {fullname, email, password, username} = req.body;
         
         // ვამოწმებთ არსებობს თუ არა, მომმხრაბელის მიერ შემოტანილი იმეილით შექმნილი აქაუნთი
         const userExsist = await User.findOne({email});
-        console.log(userExsist)
 
         // თუ არსებობს დავაბრუნებთ შეცდომას ტექსტით რომ იმეილი უკვე რეგისტრირებულია
         if (userExsist) {
@@ -33,6 +32,7 @@ const register = async (req, res) => {
         const user = new User({
             email,
             fullname,
+            username,
             password: hashedPassword,
             role: "user",
             isVerified: false
@@ -44,7 +44,7 @@ const register = async (req, res) => {
 
         await sendVerificationEmail(user);
 
-        res.status(201).json("რეგისტრაცია წარმატებით დასრულდა.")
+        res.status(201).json("რეგისტრაცია წარმატებით დასრულდა, გთხოვთ დაადასტუროთ იმეილი, წინააღმდეგ შემთხვევაში ავტორიზაციას ვერ გაივლით!")
         
     } catch(err) {
         res.status(500).json(err.message);
@@ -158,8 +158,27 @@ const login = async (req, res) => {
     }
 };
 
+// მომხმარებლის აქაუნთიდან გამოსვლა
+const logout = async (req, res) => {
+    try {
+        // res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+        // res.setHeader("Access-Control-Allow-Credentials", "true");
+        
+        res.clearCookie("loginToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None"
+        });
+
+
+        res.json("აქაუნთიდან გამოსვლა წარმატებით შესრულდა");
+    } catch(err) {
+        res.status(500).json(err.message);
+    }
+}
+
 // მომცმსრებლის პროფილის ინფორმაცია
-const profile = async (req, res) => {
+const myProfile = async (req, res) => {
     try {
         // ვიპოვოთ მომხმარებელი ტოკენის აიდის მიხედვით და გამოვრიცხოთ პაროლი
         const user = await User.findById(req.user.id).select('-password');
@@ -205,24 +224,60 @@ const changePassword = async (req, res) => {
     }
 }
 
-// მომხმარებლის აქაუნთიდან გამოსვლა
-const logout = async (req, res) => {
+// მომხმარებლის ძიება
+const searchUser = async (req, res) => {
     try {
-        // res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
-        // res.setHeader("Access-Control-Allow-Credentials", "true");
-        
-        res.clearCookie("loginToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "None"
-        });
+        // საძიებო სიტყვა
+        const {q} = req.query;
 
+        // ვამოწმებთ გვაქვს თუ არა საძიებო სიტყვა
+        if(!q) return res.status(400).json("საძიებო სიტყვა (query) აუცილებელია!");
 
-        res.json("აქაუნთიდან გამოსვლა წარმატებით შესრულდა");
+        // ვქმნით regex რომელიც გადმოცემული სიტყვით დასაწისიდანვე ეძებს
+        const regex = new RegExp('^' + q, 'i');
+
+        // ვეძებთ მომხმარებლებს fullname/username_ის გამოყენებით
+        const users = await User.find({
+            $or: [
+                { fullname: regex },
+                { username: regex }
+            ]
+        })
+            .select("fullname username role _id")
+            .limit(5);
+
+        // თუ დაბრუნებული მასივი ცარიელია (ესეიგი ვერ მოიძებნა)
+        if(users.length === 0) return res.status(404).json("მომხმარებელი ვერ მოიძებნა");
+
+        // სხვა შემტხვევაში ვაბრუნებთ მასივს
+        res.json(users);
+
+    } catch(err) {
+        res.status(500).json(err.message);
+    }
+}
+
+// მოხმარებლის პროფილის ნახვა
+const userProfile = async (req, res) => {
+    try {
+        // ლინკიდან ვიღებთ ID პარამეტრს
+        const {userId} = req.params;
+
+        // ვამოწმებთ არის თუ არა ცარეიელი
+        if(!userId) return res.status(400).json("მომხმარებლის ID აუცილებელია!");
+
+        // ვეძებთ მომხმარებელს userId_ის მეშვეობით
+        const user = await User.findById(userId).select("-password -updatedAt -__v -friends");
+
+        // ვამოწმებთ არსებობს თუ არა მომხმარებელი
+        if(!user) return res.status(404).json("მომხმარებლის მოძიება ვერ მოხერხდა!");
+
+        // ვაბრუნებთ მომხმარებლის ობიექტს
+        res.json(user);
     } catch(err) {
         res.status(500).json(err.message);
     }
 }
 
 
-module.exports = {register, login, logout, verifyEmail, profile, changePassword};
+module.exports = {register, login, logout, verifyEmail, myProfile, changePassword, searchUser, userProfile};
