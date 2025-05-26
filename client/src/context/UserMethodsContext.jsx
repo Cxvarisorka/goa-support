@@ -45,8 +45,33 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
+    // ვქმნით ასინქრონულ ფუნქციას, რომლის მეშვეობიოთაც მივიღებთ სხვა მომხმარებლის მონაცემებს
+    const fetchUser = async (userId, setUser) => {
+        try {
+            // ვაგზავნით GET მოთხოვნას userId_ით
+            const response = await fetch(`${API_URL}/user/profile/${userId}`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            // გავადგვყავს json_დან ჩვეულებრივ მონაცემში დაბრუნებული მნიშვნელობები
+            const data = await response.json()
+
+            // თუ რაიმე პრობლემაა, გამოვიტანოთ ერორ მესიჯი
+            if (!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            // თუ პრობლემა არ არის მაშინ მივანიჭოთ დაბრუნებული მნიშვნელობა user მდგომარეობას
+            setUser(data);
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+
     return (
-        <UserMethodsContext.Provider value={{searchUsers}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser}}>
             {children}
         </UserMethodsContext.Provider>
     )
