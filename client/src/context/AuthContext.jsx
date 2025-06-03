@@ -3,17 +3,20 @@ import { useEffect } from "react";
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import io from "socket.io-client"
 
 // კონტექსტი (ქსელის შექმნა)
 export const AuthContext = createContext();
 
 // სერვერის მისამართი
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
 export const AuthProvider = ({children}) => {
     // ავტორიზაციის შედეგად მიღებული მონაცემების შესანახად (მდგომარეობა)
     const [user, setUser] = useState(null);
+    const [friendEvents, setFriendEvents] = useState([]);
+
 
     // სხვადასხვა გვერდზე მექან9იკურად გადასასვლელად
     const navigate = useNavigate();
@@ -22,6 +25,38 @@ export const AuthProvider = ({children}) => {
     useEffect(() => {
         checkAuth();
     }, []);
+
+    useEffect(() => {
+        if (!user) return;
+
+        const socket = io(import.meta.env.VITE_API_URL);
+        socket.emit('join', user._id || "Guest");
+
+        socket.on('friendRequestReceived', ({ from, message }) => {
+            toast.info(`${message} ${from.fullname}საგან`);
+            setFriendEvents(prev => [...prev, { type: 'received', from, message }]);
+        });
+
+        socket.on('friendRequestRejected', ({ from, message }) => {
+            toast.info(`${message} ${from.fullname}საგან`);
+            setFriendEvents(prev => [...prev, { type: 'rejected', from, message }]);
+        });
+
+        socket.on('friendRequestAccepted',  ({ from, message }) => {
+            toast.info(`${message} ${from.fullname}საგან`);
+            setFriendEvents(prev => [...prev, { type: 'accepted', from, message }]);
+        });
+
+        socket.on('friendRemoved', ({ from, message }) => {
+            toast.info(`${message} ${from.fullname}საგან`);
+            setFriendEvents(prev => [...prev, { type: 'accepted', from, message }]);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user]);
+
 
     const checkAuth = async () => {
         try {
@@ -145,7 +180,7 @@ export const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{register, login, logout, user}}>
+        <AuthContext.Provider value={{register, login, logout, user, friendEvents}}>
             {children}
         </AuthContext.Provider>
     )
