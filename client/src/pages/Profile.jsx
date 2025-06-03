@@ -3,21 +3,33 @@ import { useParams, useNavigate } from "react-router";
 import useUserMethods from "../components/hooks/useUserMethods.js";
 import useAuth from "../components/hooks/useAuth.js";
 
-const Profile = React.memo(() => {
-  const { user: authUser } = useAuth();
-  const { fetchUser } = useUserMethods();
+const Profile = () => {
+  const { user: authUser, friendEvents } = useAuth();
+  const {
+    fetchUser,
+    addFriend,
+    cancelFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend
+  } = useUserMethods();
   const { userId } = useParams();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [friendStatus, setFriendStatus] = useState("none"); // "none", "request_sent", "request_received", "friends"
 
   useEffect(() => {
+      
+
     if (userId) {
-      fetchUser(userId, setUser);
+      fetchUser(userId, setUser, setFriendStatus);
     } else {
       setUser(authUser);
     }
-  }, [userId, authUser]);
+  }, [userId, authUser, friendEvents]);
+
+ 
 
   if (!authUser) {
     return (
@@ -35,6 +47,10 @@ const Profile = React.memo(() => {
     );
   }
 
+  console.log( friendEvents)
+
+
+  // ვამოწმებთ საკუთარი პროფილია თუ არა
   const isOwnProfile = !userId || userId === authUser._id;
 
   return (
@@ -58,20 +74,89 @@ const Profile = React.memo(() => {
           <span className="font-semibold">როლი:</span> {user.role}
         </p>
 
+        {/* ვამოწმებთ არის თუ არა საკუთარი პროფილი */}
         {!isOwnProfile && (
           <div className="flex flex-col gap-2">
-            <button
-              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              onClick={() => alert("დამატება")}
-            >
-              დამატება მეგობრებში
-            </button>
+
+            {friendStatus === "none" && (
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                onClick={async () => {
+                  await addFriend(user._id);
+                  setFriendStatus("request_sent");
+                }}
+              >
+                დამატება მეგობრებში
+              </button>
+            )}
+
+            {friendStatus === "request_sent" && (
+              <button
+                className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
+                onClick={async () => {
+                  await cancelFriendRequest(user._id, setFriendStatus);
+                  setFriendStatus("none");
+                }}
+              >
+                მეგობრობის მოთხოვნის გაუქმება
+              </button>
+            )}
+
+            {friendStatus === "request_received" && (
+              <>
+                <button
+                  className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+                  onClick={async () => {
+                    await acceptFriendRequest(user._id);
+                    setFriendStatus("friends");
+                  }}
+                >
+                  მოთხოვნის დადასტურება
+                </button>
+                <button
+                  className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+                  onClick={async () => {
+                    await rejectFriendRequest(user._id);
+                    setFriendStatus("none");
+                  }}
+                >
+                  მოთხოვნის უარყოფა
+                </button>
+              </>
+            )}
+
+            {friendStatus === "friends" && (
+              <>
+                <button
+                  className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+                  onClick={() => navigate(`/messages/${user._id}`)}
+                >
+                  მესიჯის გაგზავნა
+                </button>
+
+                <button
+                  className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+                  onClick={async () => {
+                    const confirmed = window.confirm("დარწმუნებული ხარ, რომ გინდა წაშალო მეგობრებიდან?");
+                    if (confirmed) {
+                      await removeFriend(user._id); // ეს ფუნქცია უნდა არსებობდეს useUserMethods-ში
+                      setFriendStatus("none");
+                    }
+                  }}
+                >
+                  მეგობრობის გაუქმება
+                </button>
+              </>
+            )}
+
+
             <button
               className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
               onClick={() => alert("დაბლოკვა")}
             >
               დაბლოკვა
             </button>
+
             <button
               className="bg-gray-400 text-white py-2 px-4 rounded hover:bg-gray-500"
               onClick={() => navigate("/profile")}
@@ -83,6 +168,7 @@ const Profile = React.memo(() => {
       </section>
     </main>
   );
-});
+};
+
 
 export default Profile;
