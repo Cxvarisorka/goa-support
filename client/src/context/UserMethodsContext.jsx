@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 export const UserMethodsContext = createContext();
 
 // სერვერის მისამართი
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
 export const UserMethodsProvider = ({children}) => {
@@ -45,33 +45,154 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
-    // ვქმნით ასინქრონულ ფუნქციას, რომლის მეშვეობიოთაც მივიღებთ სხვა მომხმარებლის მონაცემებს
-    const fetchUser = async (userId, setUser) => {
+    // ვქმნით ასინქრონულ ფუნქციას, რომლის მეშვეობითაც მივიღებთ სხვა მომხმარებლის მონაცემებს და მივიღებთ ინფორმაცის გაგზავნილია თუ არა მეგობრობის მოთხოვნა
+    const fetchUser = async (userId, setUser, setFriendStatus) => {
         try {
-            // ვაგზავნით GET მოთხოვნას userId_ით
+            // ვაგზავნით GET მოთხოვნას userId-ით
             const response = await fetch(`${API_URL}/user/profile/${userId}`, {
                 method: "GET",
                 credentials: "include"
             });
 
-            // გავადგვყავს json_დან ჩვეულებრივ მონაცემში დაბრუნებული მნიშვნელობები
-            const data = await response.json()
+            // ვაყალიბებთ json ფორმატში დაბრუნებულ მონაცემებს
+            const data = await response.json();
 
-            // თუ რაიმე პრობლემაა, გამოვიტანოთ ერორ მესიჯი
+            // თუ მოთხოვნა არ იყო წარმატებული, ვაჩვენოთ შეცდომის მესიჯი
             if (!response.ok) {
                 toast.error(data);
                 return;
             }
 
-            // თუ პრობლემა არ არის მაშინ მივანიჭოთ დაბრუნებული მნიშვნელობა user მდგომარეობას
-            setUser(data);
+            // ვანიჭებთ მომხმარებლის ობიექტს setUser-ს
+            setUser(data.user);
+
+            // თუ არსებობს გაგზავნილი მეგობრობის მოთხოვნის ინფორმაცია, ვანახლებთ შესაბამის მდგომარეობას
+            if (setFriendStatus && typeof data.friendStatus === "string") {
+                setFriendStatus(data.friendStatus);
+            }
+
         } catch (err) {
+            // შეცდომის შემთხვევაში ვაჩვენებთ შეტყობინებას
             toast.error(err.message);
         }
     };
 
+    // ვქმნით ასინქრონულ ფუნქციას, მეგობრებში დასამატებლად
+    const addFriend = async (receiverId) => {
+        try {
+            // ვაგზავნით POST მოთხოვნას friend ბილიკზე
+            const res = await fetch(`${API_URL}/friend/add/${receiverId}`, {
+                method: "POST",
+                credentials: "include"
+            })
+
+            // გავადგვყავს json_დან ჩვეულებრივ მონაცემში დაბრუნებული მნიშვნელობები
+            const data = await res.json()
+
+            // თუ რაიმე პრობლემაა, გამოვიტანოთ ერორ მესიჯი
+            if (!res.ok) {
+                toast.error(data);
+                return;
+            }
+
+            // სხვა შემთხვევაში დავბეჭდოთ წარმატების მესიჯი
+            toast.success(data);
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+    // ვქმნით ასინქრონულ ფუნქციას, გამოგზავნილი მოთხოვნის უარყოფისთვის
+    const rejectFriendRequest = async (senderId) => {
+        try {
+            const res = await fetch(`${API_URL}/friend/reject/${senderId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if(!res.ok){
+                toast.error(data);
+                return;
+            }
+
+            // fetchUser(senderId);
+            toast.success(data);
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+    // ვქმნით ასინქრონულ ფუნქციას, გაგზავნილი მეგობრობის დაქანსელებისთვის
+    const cancelFriendRequest = async (receiverId, setFriendStatus) => {
+        try {
+            const res = await fetch(`${API_URL}/friend/cancel/${receiverId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setFriendStatus('none');
+            toast.success(data);
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+    // ვქმნით ასინქრონულ ფუნქციას, გაგზავნილი მეგობრობის დასადასტურებლად
+    const acceptFriendRequest = async (senderId) => {
+        try {
+            const response = await fetch(`${API_URL}/friend/accept/${senderId}`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            toast.success(data);
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+    // ვქმნით ასინქრონულ ფუნქციას, დადასტურებული მეგობრობის გასაუქმებლად
+    const removeFriend = async (friendId) => {
+        try {
+            const response = await fetch(`${API_URL}/friend/remove/${friendId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            toast.success(data);
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+
+
+
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend}}>
             {children}
         </UserMethodsContext.Provider>
     )
