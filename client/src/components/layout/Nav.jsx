@@ -108,7 +108,7 @@ const Nav = () => {
         <header className="bg-green-600 text-white shadow-md">
             <nav className="container mx-auto flex flex-wrap items-center justify-between p-4">
                 {/* Logo */}
-                <h1 className="text-2xl font-bold">Goa Support</h1>
+                <h1 className="text-2xl font-bold">Techask</h1>
 
                 {/* Hamburger */}
                 <button
@@ -156,6 +156,9 @@ const Nav = () => {
                                 >
                                     გამოსვლა
                                 </button>
+                            </li>
+                            <li>
+                              ზარები
                             </li>
                         </>
                     ) : (
