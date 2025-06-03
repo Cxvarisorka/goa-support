@@ -1,6 +1,7 @@
 // Models (მონაცემთა ბაზის სექცია)
 const User = require("../models/user.model.js");
 const VerificationToken = require("../models/token.model.js");
+const FriendRequest = require("../models/friendRequest.model.js");
 
 // Utilities (დამხმარე ფუნქციები)
 const hashPassword = require("../utils/passwordHashing.js");
@@ -9,6 +10,7 @@ const sendVerificationEmail = require("../utils/sendVerificationEmail.js");
 // საჭირო მოდულები
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+
 
 // მომხმარებლის რეგისტრაცია
 const register = async (req, res) => {
@@ -146,11 +148,12 @@ const login = async (req, res) => {
         });
 
         res.status(200).json({
-            id: user._id,
+            _id: user._id,
             email: user.email,
             fullname: user.fullname, 
             role: user.role,
-            isVerified: user.isVerified
+            isVerified: user.isVerified,
+            username: user.username
         });
 
     } catch (err) {
@@ -260,24 +263,42 @@ const searchUser = async (req, res) => {
 // მოხმარებლის პროფილის ნახვა
 const userProfile = async (req, res) => {
     try {
-        // ლინკიდან ვიღებთ ID პარამეტრს
-        const {userId} = req.params;
+        const { userId } = req.params;
+        const authUserId = req.user.id;
 
-        // ვამოწმებთ არის თუ არა ცარეიელი
-        if(!userId) return res.status(400).json("მომხმარებლის ID აუცილებელია!");
+        if (!userId) return res.status(400).json("მომხმარებლის ID აუცილებელია!");
 
-        // ვეძებთ მომხმარებელს userId_ის მეშვეობით
-        const user = await User.findById(userId).select("-password -updatedAt -__v -friends");
+        const user = await User.findById(userId).select("-password -updatedAt -__v");
+        if (!user) return res.status(404).json("მომხმარებლის მოძიება ვერ მოხერხდა!");
 
-        // ვამოწმებთ არსებობს თუ არა მომხმარებელი
-        if(!user) return res.status(404).json("მომხმარებლის მოძიება ვერ მოხერხდა!");
 
-        // ვაბრუნებთ მომხმარებლის ობიექტს
-        res.json(user);
-    } catch(err) {
+        let friendStatus = "none"; // default
+
+         if (user.friends.includes(authUserId)) {
+            friendStatus = "friends";
+        } else {
+            // 🔹 Otherwise, check for an active friend request
+            const friendReq = await FriendRequest.findOne({
+                $or: [
+                    { senderId: authUserId, receiverId: userId },
+                    { senderId: userId, receiverId: authUserId }
+                ]
+            });
+
+            if (friendReq) {
+                if (friendReq.senderId.toString() === authUserId) {
+                    friendStatus = "request_sent";
+                } else if (friendReq.receiverId.toString() === authUserId) {
+                    friendStatus = "request_received";
+                }
+            }
+        }
+
+        res.status(200).json({ user, friendStatus });
+    } catch (err) {
         res.status(500).json(err.message);
     }
-}
+};
 
 
 module.exports = {register, login, logout, verifyEmail, myProfile, changePassword, searchUser, userProfile};
