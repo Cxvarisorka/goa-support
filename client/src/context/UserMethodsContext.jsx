@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import useAuth from "../components/hooks/useAuth";
 
 // კონტექსტი (ქსელის შექმნა)
 export const UserMethodsContext = createContext();
@@ -12,7 +13,15 @@ const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
 export const UserMethodsProvider = ({children}) => {
+    const [notifications, setNotifications] = useState(null);
+    const {version} = useAuth();
 
+    useEffect(() => {
+        getAllNotifications();
+    }, [version]);
+
+    console.log('notifications',notifications)
+    
     // ვქმნით ასინქრონულ ფუნქციას, მომხმარებლების ძიებისთვის
     const searchUsers = async (query) => {
         try {
@@ -188,11 +197,74 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
+    // ვქმნით ასინქრონულ ფუნქციას, ყველა უნახავი შეტყობინების წამოსაღებად
+    const getAllNotifications = async () => {
+        try {
+            const response = await fetch(`${API_URL}/notification/all`, {
+                method: "GET",
+                credentials: "include"
+            });
 
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setNotifications(data);
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+    // ვქმნით ასინქრონულ ფუნქციას, კონკლრეტული შეტყობინების წამოსაღებად
+    const getNotification = async (id, setNotification) => {
+        try {
+            const response = await fetch(`${API_URL}/notification/${id}`, {
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setNotification(data);
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+
+    // ვქმნით ასინქრონულ ფუნქციას, ყგველა შეტყობინებიოს წასაშლელად
+    const deleteAllNotification = async () => {
+        try {
+            const response = await fetch(`${API_URL}/notification/all`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setNotifications([])
+
+            toast.success(data);
+        } catch(err) {
+            toast.error(err);
+        }
+    }
 
 
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification}}>
             {children}
         </UserMethodsContext.Provider>
     )

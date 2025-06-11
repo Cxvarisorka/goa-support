@@ -1,5 +1,6 @@
 // Models (მონაცემთა ბაზის სექცია)
 const FriendRequest = require("../models/friendRequest.model.js");
+const Notification = require("../models/notification.model.js");
 const User = require("../models/user.model.js");
 
 // მეგობრობის მოთხოვნის გაგზავნა
@@ -7,8 +8,6 @@ const sendFriendRequest = async (req, res) => {
     try {
         const {receiverId} = req.params;
         const senderId = req.user.id;
-
-        
 
         // ვამოწმებთ უგზავნის თუ არა მომხმარებელი თავისთავს მოთხოვნას
         if(receiverId === senderId) return res.status(400).json("თქვენ არ შეგიძლიათ გაუგზავნოთ მეგობრობა საკუთარ თავს!");
@@ -38,7 +37,7 @@ const sendFriendRequest = async (req, res) => {
 
         // მოგვაქვს მეგობრობის გამომგზავნის ობიექტი ბაზიდან
         const sender = await User.findById(senderId).select("-password -updatedAt -__v");
-        console.log(sender)
+        
 
         // თუ მიმღები ონლაინ არის ვიგზავნით მესიჯს
         if(receiverSocketId) {
@@ -47,6 +46,14 @@ const sendFriendRequest = async (req, res) => {
                 message: "თქვენ მიიღებთ ახალი მეგობრობის მოთხოვნა"
             });
         }
+
+        // შეტყობინების შემქნა
+        await Notification.create({
+            user: receiverId,
+            from: senderId,
+            type: "info",
+            message: `${sender.username} გამოგიგზავნათ მეგობრობის მოთხოვნა`
+        });
 
         // დავაბრუნოთ წარმატების მესიჯი
         res.status(201).json("მეგობრობის მოთხოვნა წარმატებით გაუგზავნა!");
@@ -88,6 +95,15 @@ const rejectFriendRequest = async (req, res) => {
                 message: "თქვენი მეგობრობის მოთხოვნა უარყოფილია"
             });
         }
+
+        // შეტყობინების გაგზავნა
+        await Notification.create({
+            user: senderId,
+            from: receiverId,
+            type: "reject",
+            message: `${receiver.username} უარყო თქვენი მეგობრობის მოთხოვნა`
+        });
+
 
         res.status(200).json("მეგობრობის მოთხოვნა უარყოფილია.");
     } catch (err) {
@@ -156,6 +172,14 @@ const acceptFirendRequest = async (req, res) => {
             });
         }
 
+        // შეტყობინების გაგზავნა
+        await Notification.create({
+            user: senderId,
+            from: receiverId,
+            type: "success",
+            message: `${receiver.username} დადასტურა თქვენი მეგობრობის მოთხოვნა`
+        });
+
         res.status(200).json("მეგობრობის მოთხოვნა წარმატებით დადასტურდა.");
         
     } catch(err) {
@@ -199,6 +223,14 @@ const removeFriend = async (req, res) => {
                 message: "თქვენ წაგშალეს მეგობრებიდან"
             });
         }
+
+        // შეტყობინების გაგზავნა
+        await Notification.create({
+            user: friendId,
+            from: userId,
+            type: "info",
+            message: `${removedBy.username} წაგშალათ მეგობრებიდან`
+        });
 
         // წარმატების მესიჯი
         res.status(200).json("მეგობარი წარმატებით წაიშალა!");

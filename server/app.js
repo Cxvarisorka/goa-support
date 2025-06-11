@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 // Routers
 const userRouter = require("./routers/user.router.js");
 const friendRequestRouter = require("./routers/friendRequest.router.js");
+const notificationRouter = require("./routers/notification.router.js");
 
 // Env ფაილის კონფიგურაცია
 dotenv.config();
@@ -83,6 +84,7 @@ app.use('/api/friend', (req, res, next) => {
     req.onlineUsers = onlineUsers;
     next();
 }, friendRequestRouter);
+app.use('/api/notification', notificationRouter);
 
 
 

@@ -4,7 +4,7 @@ import useUserMethods from "../components/hooks/useUserMethods.js";
 import useAuth from "../components/hooks/useAuth.js";
 
 const Profile = () => {
-  const { user: authUser, friendEvents } = useAuth();
+  const { user: authUser, version } = useAuth();
   const {
     fetchUser,
     addFriend,
@@ -27,7 +27,7 @@ const Profile = () => {
     } else {
       setUser(authUser);
     }
-  }, [userId, authUser, friendEvents]);
+  }, [userId, authUser, version]);
 
  
 
@@ -47,7 +47,7 @@ const Profile = () => {
     );
   }
 
-  console.log( friendEvents)
+  console.log( version)
 
 
   // ვამოწმებთ საკუთარი პროფილია თუ არა

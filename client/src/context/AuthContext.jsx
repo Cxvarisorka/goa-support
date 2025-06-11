@@ -15,7 +15,9 @@ const API_URL = import.meta.env.VITE_API_URL + "/api";
 export const AuthProvider = ({children}) => {
     // ავტორიზაციის შედეგად მიღებული მონაცემების შესანახად (მდგომარეობა)
     const [user, setUser] = useState(null);
-    const [friendEvents, setFriendEvents] = useState([]);
+
+    // მექანიკურად re-render
+    const [version, setVersion] = useState(0);
 
 
     // სხვადასხვა გვერდზე მექან9იკურად გადასასვლელად
@@ -34,23 +36,24 @@ export const AuthProvider = ({children}) => {
 
         socket.on('friendRequestReceived', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setFriendEvents(prev => [...prev, { type: 'received', from, message }]);
+            setVersion(prev => prev + 1); // 🔁 Trigger re-render
         });
 
         socket.on('friendRequestRejected', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setFriendEvents(prev => [...prev, { type: 'rejected', from, message }]);
+            setVersion(prev => prev + 1); // 🔁 Trigger re-render
         });
 
-        socket.on('friendRequestAccepted',  ({ from, message }) => {
+        socket.on('friendRequestAccepted', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setFriendEvents(prev => [...prev, { type: 'accepted', from, message }]);
+            setVersion(prev => prev + 1); // 🔁 Trigger re-render
         });
 
         socket.on('friendRemoved', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setFriendEvents(prev => [...prev, { type: 'accepted', from, message }]);
+            setVersion(prev => prev + 1); // 🔁 Trigger re-render
         });
+
 
         return () => {
             socket.disconnect();
@@ -180,7 +183,7 @@ export const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{register, login, logout, user, friendEvents}}>
+        <AuthContext.Provider value={{register, login, logout, user, version}}>
             {children}
         </AuthContext.Provider>
     )

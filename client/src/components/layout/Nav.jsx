@@ -92,9 +92,75 @@ const UserSearch = ({ onSearch, results, setSearchResults }) => {
   );
 };
 
+const NotificationDropdown = ({ notifications, setNotifications, markAsRead, deleteAllNotification }) => {
+  const navigate = useNavigate();
+
+  const handleSeeAll = () => {
+    navigate("/notifications");
+  };
+
+  const handleClickNotification = async (notification) => {
+    if (!notification.isRead) {
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n._id === notification._id ? { ...n, isRead: true } : n
+        )
+      );
+    }
+
+    navigate(`/notification/${notification._id}`);
+  };
+
+  return (
+    <div className="absolute right-0 mt-2 w-80 bg-white text-black rounded-md shadow-lg z-50 border border-gray-200 overflow-hidden">
+      <div className="p-4 font-bold border-b border-gray-300">შეტყობინებები</div>
+      <div className="max-h-60 overflow-y-auto divide-y divide-gray-100">
+        {notifications?.length ? (
+          notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className={`px-4 py-3 cursor-pointer transition-colors ${
+                notification.isRead
+                  ? "bg-white hover:bg-gray-100"
+                  : "bg-green-50 hover:bg-green-100 font-medium"
+              }`}
+              onClick={() => handleClickNotification(notification)}
+            >
+              {notification.message}
+            </div>
+          ))
+        ) : (
+          <div className="px-4 py-3 text-gray-500 text-center">
+            შეტყობინებები არ არის
+          </div>
+        )}
+      </div>
+
+      {notifications?.length > 0 && (
+        <div className="flex border-t border-gray-200">
+          <button
+            onClick={deleteAllNotification}
+            className="w-1/2 text-red-600 hover:bg-red-100 py-2 transition-colors text-sm"
+          >
+            წაშლა ყველა
+          </button>
+          <button
+            onClick={handleSeeAll}
+            className="w-1/2 text-blue-600 hover:bg-blue-100 py-2 transition-colors text-sm"
+          >
+            ნახე ყველა
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 const Nav = () => {
     const { user, logout } = useAuth();
-    const { searchUsers } = useUserMethods();
+    const { searchUsers, notifications, setNotifications, deleteAllNotification } = useUserMethods();
+    const [showNotifications, setShowNotifications] = useState(false);
     const [searchResults, setSearchResults] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -103,6 +169,7 @@ const Nav = () => {
         const data = await searchUsers(e.target.query.value);
         setSearchResults(data);
     };
+
 
     return (
         <header className="bg-green-600 text-white shadow-md">
@@ -157,9 +224,26 @@ const Nav = () => {
                                     გამოსვლა
                                 </button>
                             </li>
-                            <li>
-                              ზარები
+                            <li className="relative">
+                              <button
+                                onClick={() => setShowNotifications((prev) => !prev)}
+                                className="hover:text-green-300 transition-colors duration-200 block"
+                              >
+                                შეტყობინებები
+                                {notifications?.some((n) => !n.isRead) && (
+                                  <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                                )}
+                              </button>
+
+                              {showNotifications && (
+                                <NotificationDropdown
+                                  notifications={notifications}
+                                  setNotifications={setNotifications}
+                                  deleteAllNotification={deleteAllNotification}
+                                />
+                              )}
                             </li>
+
                         </>
                     ) : (
                     <>
@@ -201,6 +285,8 @@ const Nav = () => {
                     </div>
                 </div>
             </nav>
+            
+
         </header>
     );
 };
