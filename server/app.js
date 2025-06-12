@@ -35,22 +35,22 @@ const io = new Server(server, {
 });
 
 // კლიენტის ფოლდერი რომელიც უნდა მივაწოდო მომხმარებელს
-// app.use(express.static(path.join(__dirname, "dist")))
+app.use(express.static(path.join(__dirname, "dist")))
 
 
 // cross-origin მოთხოვნები (მხოლოდ 5173 პრტიდან არის მოთხოვნა დაშვებულია ამჟამად)
-// app.use(cors({
-//     origin: process.env.CLIENT_URL, 
-//     credentials: true // allow cookies to be sent
-// }));
+app.use(cors({
+    origin: process.env.CLIENT_URL, 
+    credentials: true // allow cookies to be sent
+}));
 
 // cookies წამკითხველი
 app.use(cookieParser());
 
 // for any GET request that hasn't been matched by previous routes, run this function
-// app.get(/^\/(?!api).*/, (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-// });
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // საიტზე შემოსული ხალხის ინფო
 const onlineUsers = new Map();
