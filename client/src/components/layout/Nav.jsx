@@ -224,6 +224,9 @@ const Nav = () => {
                                     გამოსვლა
                                 </button>
                             </li>
+                            <li>
+                              <Link to={'/friends'}>მეგობრები</Link>
+                            </li>
                             <li className="relative">
                               <button
                                 onClick={() => setShowNotifications((prev) => !prev)}

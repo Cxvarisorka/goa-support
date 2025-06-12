@@ -240,4 +240,5 @@ const removeFriend = async (req, res) => {
 };
 
 
+
 module.exports = {sendFriendRequest, cancelFriendRequest, rejectFriendRequest, acceptFirendRequest, removeFriend};
