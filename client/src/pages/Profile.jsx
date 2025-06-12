@@ -47,8 +47,6 @@ const Profile = () => {
     );
   }
 
-  console.log( version)
-
 
   // ვამოწმებთ საკუთარი პროფილია თუ არა
   const isOwnProfile = !userId || userId === authUser._id;

@@ -13,14 +13,19 @@ const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
 export const UserMethodsProvider = ({children}) => {
+    const {user} = useAuth();
     const [notifications, setNotifications] = useState(null);
+    const [friends, setFriends] = useState(null);
+
     const {version} = useAuth();
 
     useEffect(() => {
-        getAllNotifications();
-    }, [version]);
-
-    console.log('notifications',notifications)
+        if(user) {
+            getAllNotifications();
+            fetchFriends();  
+        }
+        
+    }, [version, user]);
     
     // ვქმნით ასინქრონულ ფუნქციას, მომხმარებლების ძიებისთვის
     const searchUsers = async (query) => {
@@ -262,9 +267,29 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
+    // ყველა მ,ეგობრის ინფოს წამოღება
+    const fetchFriends = async () => {
+        try {
+            const idArr = user.friends;
+
+            const responses = await Promise.all(
+                idArr.map(id => fetch(`${API_URL}/user/profile/${id}`, {credentials: 'include'}))
+            );
+
+            const data = await Promise.all(
+                responses.map(res => res.json())
+            );
+            
+            setFriends(data);
+        } catch (err) {
+            toast.error("Failed to fetch friends: " + err.message);
+        }
+    };
+
+
 
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends}}>
             {children}
         </UserMethodsContext.Provider>
     )
