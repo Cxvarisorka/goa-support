@@ -16,6 +16,8 @@ export const UserMethodsProvider = ({children}) => {
     const {user} = useAuth();
     const [notifications, setNotifications] = useState(null);
     const [friends, setFriends] = useState(null);
+    const [messages, setMessages] = useState(null);
+    const [chatWith, setChatWith] = useState(null);
 
     const {version} = useAuth();
 
@@ -243,7 +245,6 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
-
     // ვქმნით ასინქრონულ ფუნქციას, ყგველა შეტყობინებიოს წასაშლელად
     const deleteAllNotification = async () => {
         try {
@@ -286,10 +287,55 @@ export const UserMethodsProvider = ({children}) => {
         }
     };
 
+    // ყველა მესიჯის წამოღება კონკრეტული მეგობრის ჩათიდან
+    const getMessages = async (friendId) => {
+        try {
+            const response = await fetch(`${API_URL}/message/chat/${friendId}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setMessages(data);
+        } catch (err) {
+            toast.error("Failed to fetch friends: " + err.message);
+        }
+    }
+
+    // მესიჯის გაგზავნა
+    const sendMessage = async (message, friendId) => {
+        try {
+            const response = await fetch(`${API_URL}/message/${friendId}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body: JSON.stringify({text: message})
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setMessages([...messages, data]);
+        } catch (err) {
+            toast.error("Failed to fetch friends: " + err.message);
+        }
+    }
 
 
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends, getMessages, sendMessage, messages, version}}>
             {children}
         </UserMethodsContext.Provider>
     )

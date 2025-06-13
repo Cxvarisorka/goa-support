@@ -1,5 +1,5 @@
 // კაუჭები
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -16,12 +16,17 @@ export const AuthProvider = ({children}) => {
     // ავტორიზაციის შედეგად მიღებული მონაცემების შესანახად (მდგომარეობა)
     const [user, setUser] = useState(null);
 
+
     // მექანიკურად re-render
     const [version, setVersion] = useState(0);
 
 
     // სხვადასხვა გვერდზე მექან9იკურად გადასასვლელად
     const navigate = useNavigate();
+
+    // const socketRef = useRef(null);
+
+    const notificationSound = new Audio('/sound/new-notification-010-352755.mp3')
 
     // როდესაც ადამიანი პირველად შემოდის საიტზე, ეგრევე ვცდილობთ ავტორიზაციას cookies გამოყენებით
     useEffect(() => {
@@ -31,33 +36,52 @@ export const AuthProvider = ({children}) => {
     useEffect(() => {
         if (!user) return;
 
-        const socket = io(import.meta.env.VITE_API_URL);
-        socket.emit('join', user._id || "Guest");
+        const socket = io(import.meta.env.VITE_API_URL, {
+            autoConnect: false,
+        });
+
+        socket.connect();
+
+        socket.on('connect', () => {
+            console.log("✅ Socket connected:", socket.id);
+            socket.emit('join', user._id || "Guest");
+        });
 
         socket.on('friendRequestReceived', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setVersion(prev => prev + 1); // 🔁 Trigger re-render
+            setVersion(prev => prev + 1);
         });
 
         socket.on('friendRequestRejected', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setVersion(prev => prev + 1); // 🔁 Trigger re-render
+            setVersion(prev => prev + 1);
         });
 
         socket.on('friendRequestAccepted', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setVersion(prev => prev + 1); // 🔁 Trigger re-render
+            setVersion(prev => prev + 1);
         });
 
         socket.on('friendRemoved', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
-            setVersion(prev => prev + 1); // 🔁 Trigger re-render
+            setVersion(prev => prev + 1);
+        });
+
+        socket.on('message', ({ from, text }) => {
+            toast.info(`მიღებული შეტყობინება ${from.fullname}საგან: ${text}`);
+             try {
+                notificationSound.play(); // ✅ Play sound on new message
+            } catch (err) {
+                console.warn("🔇 Failed to play sound:", err);
+            }
+            setVersion(prev => prev + 1);
         });
 
         return () => {
             socket.disconnect();
         };
     }, [user]);
+
 
 
     const checkAuth = async () => {

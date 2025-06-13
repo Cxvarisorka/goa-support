@@ -32,7 +32,7 @@ const server = http.createServer(app);
 
 // ახალი Socket.io სერვერი
 const io = new Server(server, {
-  cors: corsOption,
+  cors: corsOption
 });
 
 // კლიენტის ფოლდერი რომელიც უნდა მივაწოდო მომხმარებელს
@@ -64,6 +64,8 @@ io.on('connection', (socket) => {
         console.log(`👤 User joined with ID: ${userId}`);
         onlineUsers.set(userId, socket.id);
     });
+
+    console.log(onlineUsers)
 
     socket.on('disconnect', () => {
         console.log('❌ User disconnected:', socket.id);

@@ -19,6 +19,7 @@ import useAuth from "./components/hooks/useAuth.js";
 
 // css
 import 'react-toastify/dist/ReactToastify.css';
+import PrivateMessanger from "./pages/PrivateMessanger.jsx";
 
 
 const App = () => {
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="/friends" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Friends /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Notifications /></ProtectedRoute>}/>
           <Route path="/notification/:id" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><Notification /></ProtectedRoute>}/>
+          <Route path="/chat/:friendId" element={<ProtectedRoute canAccses={user ? true : false} navigateTo={"/login"}><PrivateMessanger /></ProtectedRoute>}/>
       </Routes>
       
       <ToastContainer position="bottom-right" autoClose={3000}  />

@@ -1,26 +1,34 @@
 const Message = require("../models/message.model");
+const Notification = require("../models/notification.model");
 const User = require("../models/user.model");
 
 // მესიჯიჯს გაგზავნის ფუნქცია
 const sendMessage = async (req, res) => {
     try {
-        const { friendId, receiverId, text } = req.body;
+        const senderId = req.user.id;
+        const { receiverId } = req.params;
+        const {text} = req.body;
 
-        if (!friendId || !receiverId || !text) {
+        console.log(senderId, receiverId, text)
+
+        if (!senderId || !receiverId || !text) {
             return res.status(400).json('ყველა ველი აუცილებელია');
         }
 
-        const message = await Message.create({ friendId, receiverId, text });
+        const message = await Message.create({ senderId, receiverId, text });
 
         // ვაცოდინოთ მესიჯის მიმღებს თუ არის ის ონლაინ
         const receiverSocketId = req.onlineUsers.get(receiverId);
         const receiver = await User.findById(receiverId).select("-password -updatedAt -__v");
+
+        console.log(receiverSocketId, receiver)
         
         if (receiverSocketId) {
             req.io.to(receiverSocketId).emit("message", {
                 from: receiver,
                 text: message.text,
                 createdAt: message.createdAt,
+                senderId: senderId
             });
 
         }
@@ -28,7 +36,7 @@ const sendMessage = async (req, res) => {
         // შეტყობინების გაგზავნა
         await Notification.create({
             user: receiverId,
-            from: friendId,
+            from: senderId,
             type: "success",
             message: `${receiver.username} გამოგიგზავნათ მესიჯი`
         });
