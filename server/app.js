@@ -11,6 +11,7 @@ const cookieParser = require("cookie-parser");
 const userRouter = require("./routers/user.router.js");
 const friendRequestRouter = require("./routers/friendRequest.router.js");
 const notificationRouter = require("./routers/notification.router.js");
+const messageRouter = require("./routers/message.router.js");
 
 // Env ფაილის კონფიგურაცია
 dotenv.config();
@@ -79,11 +80,19 @@ io.on('connection', (socket) => {
 
 // Router_ების გამოყენება
 app.use("/api/user", userRouter);
+
 app.use('/api/friend', (req, res, next) => {
     req.io = io;
     req.onlineUsers = onlineUsers;
     next();
 }, friendRequestRouter);
+
+app.use('/api/message', (req, res, next) => {
+    req.io = io;
+    req.onlineUsers = onlineUsers;
+    next();
+}, messageRouter);
+
 app.use('/api/notification', notificationRouter);
 
 
