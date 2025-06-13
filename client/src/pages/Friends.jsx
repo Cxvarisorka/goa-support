@@ -9,7 +9,7 @@ const Friends = () => {
         <main className="min-h-screen flex flex-col items-center justify-start py-10 px-4 bg-gray-50">
             <h1 className="text-3xl font-bold mb-8 text-green-600">მეგობრები</h1>
 
-            {friends.length === 0 || !friends ? (
+            {friends?.length === 0 || !friends ? (
                 <p className="text-center text-gray-500">არ გყავს მეგობრები</p>
             ) : (
                 <div className="flex flex-col gap-6 w-full max-w-md">
