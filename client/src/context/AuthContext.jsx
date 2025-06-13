@@ -54,7 +54,6 @@ export const AuthProvider = ({children}) => {
             setVersion(prev => prev + 1); // 🔁 Trigger re-render
         });
 
-
         return () => {
             socket.disconnect();
         };
