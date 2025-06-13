@@ -11,6 +11,7 @@ const cookieParser = require("cookie-parser");
 const userRouter = require("./routers/user.router.js");
 const friendRequestRouter = require("./routers/friendRequest.router.js");
 const notificationRouter = require("./routers/notification.router.js");
+const messageRouter = require("./routers/message.router.js");
 
 // Env ფაილის კონფიგურაცია
 dotenv.config();
@@ -35,22 +36,22 @@ const io = new Server(server, {
 });
 
 // კლიენტის ფოლდერი რომელიც უნდა მივაწოდო მომხმარებელს
-// app.use(express.static(path.join(__dirname, "dist")))
+app.use(express.static(path.join(__dirname, "dist")))
 
 
 // cross-origin მოთხოვნები (მხოლოდ 5173 პრტიდან არის მოთხოვნა დაშვებულია ამჟამად)
-// app.use(cors({
-//     origin: process.env.CLIENT_URL, 
-//     credentials: true // allow cookies to be sent
-// }));
+app.use(cors({
+    origin: process.env.CLIENT_URL, 
+    credentials: true // allow cookies to be sent
+}));
 
 // cookies წამკითხველი
 app.use(cookieParser());
 
 // for any GET request that hasn't been matched by previous routes, run this function
-// app.get(/^\/(?!api).*/, (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-// });
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // საიტზე შემოსული ხალხის ინფო
 const onlineUsers = new Map();
@@ -79,11 +80,19 @@ io.on('connection', (socket) => {
 
 // Router_ების გამოყენება
 app.use("/api/user", userRouter);
+
 app.use('/api/friend', (req, res, next) => {
     req.io = io;
     req.onlineUsers = onlineUsers;
     next();
 }, friendRequestRouter);
+
+app.use('/api/message', (req, res, next) => {
+    req.io = io;
+    req.onlineUsers = onlineUsers;
+    next();
+}, messageRouter);
+
 app.use('/api/notification', notificationRouter);
 
 
