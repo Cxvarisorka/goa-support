@@ -127,7 +127,7 @@ const Profile = () => {
               <>
                 <button
                   className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-                  onClick={() => navigate(`/messages/${user._id}`)}
+                  onClick={() => navigate(`/chat/${user._id}`)}
                 >
                   მესიჯის გაგზავნა
                 </button>

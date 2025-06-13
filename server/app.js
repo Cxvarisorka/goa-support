@@ -32,11 +32,11 @@ const server = http.createServer(app);
 
 // ახალი Socket.io სერვერი
 const io = new Server(server, {
-  cors: corsOption,
+  cors: corsOption
 });
 
 // კლიენტის ფოლდერი რომელიც უნდა მივაწოდო მომხმარებელს
-app.use(express.static(path.join(__dirname, "dist")))
+// app.use(express.static(path.join(__dirname, "dist")))
 
 
 // cross-origin მოთხოვნები (მხოლოდ 5173 პრტიდან არის მოთხოვნა დაშვებულია ამჟამად)
@@ -49,9 +49,9 @@ app.use(cors({
 app.use(cookieParser());
 
 // for any GET request that hasn't been matched by previous routes, run this function
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// app.get(/^\/(?!api).*/, (req, res) => {
+//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// });
 
 // საიტზე შემოსული ხალხის ინფო
 const onlineUsers = new Map();
@@ -64,6 +64,8 @@ io.on('connection', (socket) => {
         console.log(`👤 User joined with ID: ${userId}`);
         onlineUsers.set(userId, socket.id);
     });
+
+    console.log(onlineUsers)
 
     socket.on('disconnect', () => {
         console.log('❌ User disconnected:', socket.id);
