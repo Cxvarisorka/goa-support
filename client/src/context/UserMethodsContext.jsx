@@ -273,6 +273,8 @@ export const UserMethodsProvider = ({children}) => {
         try {
             const idArr = user.friends;
 
+            if(!idArr) return;
+
             const responses = await Promise.all(
                 idArr.map(id => fetch(`${API_URL}/user/profile/${id}`, {credentials: 'include'}))
             );
