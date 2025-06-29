@@ -156,10 +156,9 @@ const NotificationDropdown = ({ notifications, setNotifications, markAsRead, del
   );
 };
 
-
 const Nav = () => {
     const { user, logout } = useAuth();
-    const { searchUsers, notifications, setNotifications, deleteAllNotification } = useUserMethods();
+    const { searchUsers, notifications, setNotifications, deleteAllNotification, friends } = useUserMethods();
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchResults, setSearchResults] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -179,7 +178,7 @@ const Nav = () => {
 
                 {/* Hamburger */}
                 <button
-                    className="md:hidden text-white"
+                    className="lg:hidden text-white"
                     onClick={() => setMenuOpen((prev) => !prev)}
                 >
                     {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -187,11 +186,11 @@ const Nav = () => {
 
                 {/* Nav content */}
                 <div
-                    className={`w-full md:flex md:items-center md:justify-between md:space-x-6 mt-4 md:mt-0 ${
+                    className={`w-full lg:flex lg:items-center lg:justify-between lg:space-x-6 mt-4 lg:mt-0 ${
                         menuOpen ? "block" : "hidden"
                     }`}
                 >
-                <ul className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6">
+                <ul className="flex flex-col md:flex-row space-y-2 lg:space-y-0 md:space-x-6">
                     <li>
                         <Link
                             to="/"
@@ -224,9 +223,11 @@ const Nav = () => {
                                     გამოსვლა
                                 </button>
                             </li>
+                            
                             <li>
-                              <Link to={'/friends'}>მეგობრები</Link>
+                              <Link to={`/chat`}>მესიჯები</Link>
                             </li>
+
                             <li className="relative">
                               <button
                                 onClick={() => setShowNotifications((prev) => !prev)}
@@ -273,7 +274,7 @@ const Nav = () => {
                 </ul>
 
                 {/* Search and Contact */}
-                    <div className="flex flex-col md:flex-row gap-4 md:items-center mt-4 md:mt-0 w-full md:w-auto">
+                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center mt-4 lg:mt-0 w-full lg:w-auto">
                         {user && (
                             <UserSearch
                                 onSearch={handleSearch}
@@ -288,8 +289,6 @@ const Nav = () => {
                     </div>
                 </div>
             </nav>
-            
-
         </header>
     );
 };

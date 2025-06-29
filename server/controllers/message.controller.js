@@ -9,8 +9,6 @@ const sendMessage = async (req, res) => {
         const { receiverId } = req.params;
         const {text} = req.body;
 
-        console.log(senderId, receiverId, text)
-
         if (!senderId || !receiverId || !text) {
             return res.status(400).json('ყველა ველი აუცილებელია');
         }
@@ -20,8 +18,7 @@ const sendMessage = async (req, res) => {
         // ვაცოდინოთ მესიჯის მიმღებს თუ არის ის ონლაინ
         const receiverSocketId = req.onlineUsers.get(receiverId);
         const receiver = await User.findById(receiverId).select("-password -updatedAt -__v");
-
-        console.log(receiverSocketId, receiver)
+        const sender = await User.findById(senderId).select("-password -updatedAt -__v")
         
         if (receiverSocketId) {
             req.io.to(receiverSocketId).emit("message", {
@@ -38,7 +35,7 @@ const sendMessage = async (req, res) => {
             user: receiverId,
             from: senderId,
             type: "success",
-            message: `${receiver.username} გამოგიგზავნათ მესიჯი`
+            message: `${sender.username} გამოგიგზავნათ მესიჯი`
         });
         
         res.status(200).json(message);

@@ -12,6 +12,8 @@ const userRouter = require("./routers/user.router.js");
 const friendRequestRouter = require("./routers/friendRequest.router.js");
 const notificationRouter = require("./routers/notification.router.js");
 const messageRouter = require("./routers/message.router.js");
+const questionRouter = require("./routers/question.router.js");
+const answerRouter = require("./routers/answer.router.js");
 
 // Env ფაილის კონფიგურაცია
 dotenv.config();
@@ -58,14 +60,11 @@ const onlineUsers = new Map();
 
 // დაკავშირების მოვლენა
 io.on('connection', (socket) => {
-    console.log('🔌 User connected:', socket.id);
 
     socket.on('join', (userId) => {
         console.log(`👤 User joined with ID: ${userId}`);
         onlineUsers.set(userId, socket.id);
     });
-
-    console.log(onlineUsers)
 
     socket.on('disconnect', () => {
         console.log('❌ User disconnected:', socket.id);
@@ -82,6 +81,18 @@ io.on('connection', (socket) => {
 
 // Router_ების გამოყენება
 app.use("/api/user", userRouter);
+
+app.use('/api/question', (req, res, next) => {
+    req.io = io;
+    req.onlineUsers = onlineUsers;
+    next();
+}, questionRouter);
+
+app.use('/api/answer', (req, res, next) => {
+    req.io = io;
+    req.onlineUsers = onlineUsers;
+    next();
+}, answerRouter)
 
 app.use('/api/friend', (req, res, next) => {
     req.io = io;
