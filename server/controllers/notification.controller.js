@@ -20,8 +20,6 @@ const getNotifications = async (req, res) => {
         // შეტყობინებების მოძებნა და დალაგება ბოლო დამატებულებით
         const notifications = await Notification.find(query).sort({ createdAt: -1 });
 
-        console.log(notifications)
-
         res.status(200).json(notifications);
     } catch (error) {
         res.status(500).json("შეცდომა შეტყობინებების მიღებისას");
@@ -107,8 +105,6 @@ const deleteAll = async (req, res) => {
 
         // წაშალე ყველა შეტყობინება, რომელიც ეკუთვნის ამ მომხმარებელს
         const result = await Notification.deleteMany({user});
-
-        console.log(result, "res")
 
         res.status(200).json(`${result.deletedCount} შეტყობინება წარმატებით წაიშალა`);
     } catch(err) {

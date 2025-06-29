@@ -19,7 +19,6 @@ const PrivateMessenger = () => {
         version
     } = useUserMethods();
 
-    console.log(friends)
 
     useEffect(() => {
         if (friendId) {
@@ -56,8 +55,8 @@ const PrivateMessenger = () => {
                         >
                             <div className="relative mr-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                    {user.avatar ? (
-                                        <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                                    {user.profileImg ? (
+                                        <img src={user.profileImg} alt={user.username} className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-gray-600 font-medium">
                                             {user.username?.charAt(0).toUpperCase() || "F"}
@@ -86,8 +85,8 @@ const PrivateMessenger = () => {
                         {/* Chat Header */}
                         <div className="bg-white shadow-sm py-4 px-6 border-b sticky top-0 z-10 flex items-center">
                             <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden mr-3">
-                                {friend.avatar ? (
-                                    <img src={friend.avatar} alt={friend.username} className="w-full h-full object-cover" />
+                                {friend.profileImg ? (
+                                    <img src={friend.profileImg} alt={friend.username} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-gray-600 text-lg font-medium">
                                         {friend.username?.charAt(0).toUpperCase() || "F"}

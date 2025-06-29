@@ -10,6 +10,8 @@ const sendVerificationEmail = require("../utils/sendVerificationEmail.js");
 // საჭირო მოდულები
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const imageUpload = require("../utils/uploadImage.js");
+const deleteImage = require("../utils/deleteImage.js");
 
 
 // მომხმარებლის რეგისტრაცია
@@ -147,16 +149,12 @@ const login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
-        res.status(200).json({
-            _id: user._id,
-            email: user.email,
-            fullname: user.fullname, 
-            role: user.role,
-            isVerified: user.isVerified,
-            username: user.username
-        });
+        const retUser = await User.findById(user._id).select("-password -v");
+
+        res.status(200).json(retUser);
 
     } catch (err) {
+        console.log(err)
         res.status(500).json(err.message);
     }
 };
@@ -300,5 +298,30 @@ const userProfile = async (req, res) => {
     }
 };
 
+// პროფილის ფოტოს ატვირთვა
+const uploadProfileImage = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const image = req.file.path;
 
-module.exports = {register, login, logout, verifyEmail, myProfile, changePassword, searchUser, userProfile};
+
+        const user = await User.findById(userId);
+
+        const result = await imageUpload('profiles', image);
+
+        if(user.profileImg) {
+            user.images.push(user.profileImg);
+        }
+
+        user.profileImg = result.secure_url;
+
+        await user.save();
+
+        res.json('პროფილის ფოტოს ატვირთა წარმატებით შესრულდა!');
+    } catch(err) {
+        res.status(500).json(err.message);
+    }
+}
+
+
+module.exports = {register, login, logout, verifyEmail, myProfile, changePassword, searchUser, userProfile, uploadProfileImage};

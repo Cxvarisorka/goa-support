@@ -13,18 +13,22 @@ const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
 export const UserMethodsProvider = ({children}) => {
-    const {user} = useAuth();
+    const {user, checkAuth} = useAuth();
     const [notifications, setNotifications] = useState(null);
     const [friends, setFriends] = useState(null);
     const [messages, setMessages] = useState(null);
+    const [questions, setQuestions] = useState([]);
     const [chatWith, setChatWith] = useState(null);
 
     const {version} = useAuth();
 
+    console.log(friends)
+
     useEffect(() => {
         if(user) {
             getAllNotifications();
-            fetchFriends();  
+            fetchFriends(); 
+            getQuestions(user._id); 
         }
         
     }, [version, user]);
@@ -269,9 +273,9 @@ export const UserMethodsProvider = ({children}) => {
     }
 
     // ყველა მ,ეგობრის ინფოს წამოღება
-    const fetchFriends = async () => {
+    const fetchFriends = async (person = user) => {
         try {
-            const idArr = user.friends;
+            const idArr = person.friends;
 
             if(!idArr) return;
 
@@ -335,9 +339,174 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
+    // შეკიტხვის დამატება
+    const addQuestion = async (formData) => {
+        try {
+
+            const response = await fetch(`${API_URL}/question/`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            })
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setQuestions([...questions, data]);
+            toast.success('შეკიტხვა წარმატებით დაემატა!');
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+    // ლაიქის დამატება/მოხსნა
+    const toggleLike = async (questionId) => {
+        try {
+            const res = await fetch(`${API_URL}/question/like/${questionId}`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+
+            if(!res.ok) {
+              toast.error(data);
+              return;  
+            }
+            
+            return data;
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
+    // შეკიტხვის წაშლა
+    const deleteQuestion = async (questionId) => {
+        try {
+            const response = await fetch(`${API_URL}/question/${questionId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setQuestions(questions.filter(question => question._id != questionId));
+            
+            toast.success(data);
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+    // შეკიტხვების წამოღება
+    const getQuestions = async (userId) => {
+        try {
+            const response = await fetch(`${API_URL}/question/${userId}`, {
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            setQuestions(data);
+        } catch(err) {
+            handleError(err);
+        }
+    };
+
+    // პასუხების წამოღება
+    const getAnswers = async (questionId) => {
+        try {
+            const response = await fetch(`${API_URL}/answer/question/${questionId}`, {
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            return data;
+        } catch(err) {
+            handleError(err);
+        }
+    }
+ 
+    // პასუხის დამატება
+    const addAnswer = async (questionId, text) => {
+        try {
+            const response = await fetch(`${API_URL}/answer/${questionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ description: text })
+            });
+
+            const data = await response.json();
+
+            console.log(data)
+
+            if (!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            // ახალი პასუხის დამატება კითხვებზე (თუ საჭიროა)
+            // setQuestions(prev => [...prev, data]);
+
+            toast.success('პასუხი დაემატა!');
+
+            return data;
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+
+    // პროფილის ფოტოს შეცვლა
+    const uploadProfileImage = async (formData) => {
+        try {
+            const response = await fetch(`${API_URL}/user/change-profile-img`, {
+                credentials: 'include',
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            checkAuth();
+
+            toast.success(data);
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+
 
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends, getMessages, sendMessage, messages, version}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends, getMessages, sendMessage, messages, version, addQuestion, deleteQuestion, setQuestions, questions, getQuestions, addAnswer, getAnswers, uploadProfileImage, toggleLike}}>
             {children}
         </UserMethodsContext.Provider>
     )
